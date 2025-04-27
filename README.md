@@ -34,3 +34,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# Workflow
+
+1. User will initiate a call with AI assistant, which is structured using VAPI workflows.
+2. Assistant will ask a series of predefined questions and collect user responses.
+3. After completion of call, responses will be send to API endpoint.
+4. Then this info is feeded to GEMINI, which will generate response back to API and results will be stored in firestore database.
+

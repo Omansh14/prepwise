@@ -1,8 +1,9 @@
 'use client'
 
 import Image from 'next/image'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { cn } from "@/lib/utils";
+import { useRouter } from 'next/navigation';
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
@@ -14,12 +15,42 @@ enum CallStatus {
 interface SavedMessage {
     role: "user" | "system" | "assistant";
     content: string;
-  }
+}
 
-const Agent = ({ userName }: AgentProps) => {
+const Agent = ({ userName, userId, interviewId, feedbackId, type, questions }: AgentProps) => {
     const [isSpeaking, setIsSpeaking] = useState<Boolean>(false)
     const [messages, setMessages] = useState<SavedMessage[]>([]);
     const [lastMessage, setLastMessage] = useState<string>("");
+    const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
+
+    const router = useRouter();
+    
+    useEffect(() => {
+        const onCallStart = () => {
+            setCallStatus(CallStatus.ACTIVE)
+        }
+
+        const onCallEnd = () => {
+            setCallStatus(CallStatus.FINISHED)
+        }
+
+        const onMessage = (message: Message) => {
+            if(message.type === 'transcript' && message.transcriptType === 'final'){
+                const newMessage = { role: message.role, content: message.transcript }
+                setMessages((prev) => [...prev, newMessage])
+            }
+        }
+
+        const onSpeechStart = () => {
+            setIsSpeaking(true)
+        }
+        const onSpeechEnd = () => { 
+            setIsSpeaking(false)
+        }
+        const onError = (error: string) => {
+            console.error(error)
+        }
+    }, [])
 
     return (
         <>
@@ -28,7 +59,7 @@ const Agent = ({ userName }: AgentProps) => {
                     <div className="avatar">
                         <Image
                             src='/ai-avatar.png'
-                            alt='profile-image'
+                            alt='vapi'
                             width={65}
                             height={65}
                             className='object-cover'
@@ -66,6 +97,28 @@ const Agent = ({ userName }: AgentProps) => {
                     </div>
                 </div>
             )}
+            <div className="w-full flex justify-center">
+                {callStatus !== "ACTIVE" ? (
+                    <button className="relative btn-call" onClick={() => handleCall()}>
+                        <span
+                            className={cn(
+                                "absolute animate-ping rounded-full opacity-75",
+                                callStatus !== "CONNECTING" && "hidden"
+                            )}
+                        />
+
+                        <span className="relative">
+                            {callStatus === "INACTIVE" || callStatus === "FINISHED"
+                                ? "Call"
+                                : ". . ."}
+                        </span>
+                    </button>
+                ) : (
+                    <button className="btn-disconnect" onClick={() => handleDisconnect()}>
+                        End
+                    </button>
+                )}
+            </div>
         </>
     )
 }
